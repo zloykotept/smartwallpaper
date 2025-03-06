@@ -1,9 +1,9 @@
 extern crate clap;
 
-use std::env;
+use std::{fs, path::Path};
 
 use clap::{App, Arg};
-use smartwp::draw_calendar;
+use smartwp::{draw_calendar, theme::Theme, Config};
 
 fn main() {
     let matches = App::new("SmartWallpaper")
@@ -130,21 +130,23 @@ fn main() {
         .parse()
         .expect("Wrong float format!");
     let output = matches.value_of("output").unwrap();
-    let theme = matches.value_of("theme");
-    let current_dir = env::current_dir().expect("Не удалось получить текущую рабочую директорию");
-    println!("Текущая рабочая директория: {:?}", current_dir);
+    let theme_name = matches.value_of("theme").unwrap();
+    let absolute_path = fs::canonicalize(Path::new(path)).expect("No such file!");
+
+    let theme = Theme::new(theme_name);
+    let conf = Config {
+        file_in: absolute_path.to_str().unwrap(),
+        start_x,
+        start_y,
+        font_size,
+        right: matches.is_present("right"),
+        bottom: matches.is_present("bottom"),
+        center: matches.is_present("center"),
+        theme,
+        file_out: output,
+    };
 
     if matches.is_present("calendar") {
-        draw_calendar(
-            path,
-            start_x,
-            start_y,
-            font_size,
-            matches.is_present("r"),
-            matches.is_present("b"),
-            matches.is_present("c"),
-            theme,
-            output,
-        );
+        draw_calendar(conf);
     }
 }

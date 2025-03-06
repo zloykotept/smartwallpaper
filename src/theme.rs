@@ -22,9 +22,9 @@ impl Theme {
                 color_headline = [124, 111, 100];
             }
             "monochrome" => {
-                color_text = [52, 52, 52];
-                color_highlighted = [254, 128, 25];
-                color_headline = [141, 141, 141];
+                color_text = [168, 168, 168];
+                color_highlighted = [52, 52, 52];
+                color_headline = [154, 154, 154];
             }
             _ => panic!("ERROR WHILE CREATING THEME"),
         }
