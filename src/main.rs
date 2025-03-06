@@ -80,9 +80,8 @@ fn main() {
                 .long("theme")
                 .required(false)
                 .takes_value(true)
-                .possible_values(&["gb-dark", "gb-light", "monochrome"])
                 .default_value("gb-dark")
-                .help("Available themes: gb-dark, gb-light, monochrome"),
+                .help("Available themes: gb-dark, gb-light, monochrome-light, monochrome-dark"),
         )
         .arg(
             Arg::with_name("calendar")

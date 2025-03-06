@@ -21,12 +21,17 @@ impl Theme {
                 color_highlighted = [254, 128, 25];
                 color_headline = [124, 111, 100];
             }
-            "monochrome" => {
-                color_text = [168, 168, 168];
-                color_highlighted = [52, 52, 52];
-                color_headline = [154, 154, 154];
+            "monochrome-dark" => {
+                color_text = [168, 168, 168]; // #a8a8a8
+                color_highlighted = [231, 231, 231]; // #e7e7e7
+                color_headline = [154, 154, 154]; // #9a9a9a
             }
-            _ => panic!("ERROR WHILE CREATING THEME"),
+            "monochrome-light" => {
+                color_text = [89, 89, 89]; // #595959
+                color_highlighted = [52, 52, 52]; // #343434
+                color_headline = [77, 77, 77]; // #4d4d4d
+            }
+            _ => panic!("No such theme!"),
         }
 
         Theme {
