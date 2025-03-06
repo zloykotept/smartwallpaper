@@ -4,19 +4,29 @@ use ab_glyph::{Font, FontRef, PxScale, ScaleFont};
 use chrono::{Datelike, Local};
 use image::{open, Rgb};
 use imageproc::drawing::draw_text_mut;
+use theme::Theme;
 use time::util::days_in_month;
 use time::OffsetDateTime;
 
-// i use colors from gruvbox pallette
-const FONT_COLOR: [u8; 3] = [251, 241, 199];
-const FONT_COLOR_HIGHLIGHTED: [u8; 3] = [254, 128, 25];
-const FONT_COLOR_HEADLINE: [u8; 3] = [235, 219, 178];
+pub mod theme;
+
 static FONT_BYTES_REGULAR: &[u8] = include_bytes!("D:\\JetBrainsMono-Regular.ttf");
 static FONT_BYTES_BOLD: &[u8] = include_bytes!("D:\\JetBrainsMono-Bold.ttf");
 static FONT_BYTES_SEMIBOLD: &[u8] = include_bytes!("D:\\JetBrainsMono-Semibold.ttf");
 static FONT_BYTES_ITALIC: &[u8] = include_bytes!("D:\\JetBrainsMono-Italic.ttf");
 
-pub fn draw_callendar(file: &str, start_x: f32, start_y: f32, mut font_size: f32, output: &str) {
+pub fn draw_calendar(
+    file: &str,
+    mut start_x: f32,
+    mut start_y: f32,
+    mut font_size: f32,
+    right: bool,
+    bottom: bool,
+    center: bool,
+    theme_name: &str,
+    output: &str,
+) {
+    //prepare values
     let now = Local::now();
 
     let first_day_of_month = now.with_day(1).unwrap().weekday().num_days_from_monday() + 1;
@@ -25,6 +35,9 @@ pub fn draw_callendar(file: &str, start_x: f32, start_y: f32, mut font_size: f32
     let current_day = now.day();
     let current_year = now.year();
     let current_month = now.format("%B").to_string();
+
+    //prepare theme
+    let theme = Theme::new(theme_name);
 
     //open image and font
     let mut img = open(file)
@@ -48,13 +61,15 @@ pub fn draw_callendar(file: &str, start_x: f32, start_y: f32, mut font_size: f32
     let title = &format!("{} {}", current_month, current_year);
     let title_width = text_width(&font_regular, scale, title);
 
+    //change position of widget using flags -r -b -c
+
     //calculate center related to days of week string
     offset_x = get_x_centered(week_width, title_width, start_x);
 
     //draw title
     draw_text_mut(
         &mut img,
-        Rgb(FONT_COLOR_HIGHLIGHTED),
+        Rgb(theme.color_highlighted),
         offset_x as i32,
         start_y as i32,
         scale,
@@ -66,7 +81,7 @@ pub fn draw_callendar(file: &str, start_x: f32, start_y: f32, mut font_size: f32
     //draw week days
     draw_text_mut(
         &mut img,
-        Rgb(FONT_COLOR),
+        Rgb(theme.color_headline),
         start_x as i32,
         offset_y as i32,
         scale,
@@ -89,9 +104,9 @@ pub fn draw_callendar(file: &str, start_x: f32, start_y: f32, mut font_size: f32
                 let color;
 
                 if day as u32 == current_day {
-                    color = FONT_COLOR_HIGHLIGHTED;
+                    color = theme.color_highlighted;
                 } else {
-                    color = FONT_COLOR;
+                    color = theme.color_text;
                 }
                 let num_width = text_width(&font_regular, scale, &day.to_string());
                 offset_x = get_x_centered(cell_width, num_width, offset_x);
@@ -123,9 +138,9 @@ pub fn draw_callendar(file: &str, start_x: f32, start_y: f32, mut font_size: f32
             let color;
 
             if day as u32 == current_day {
-                color = FONT_COLOR_HIGHLIGHTED;
+                color = theme.color_highlighted;
             } else {
-                color = FONT_COLOR;
+                color = theme.color_text;
             }
             offset_x = get_x_centered(cell_width, num_width, offset_x);
             draw_text_mut(
@@ -165,23 +180,41 @@ fn text_width(font: &FontRef, scale: PxScale, text: &str) -> f32 {
         .sum()
 }
 
+fn text_height(font: &FontRef, scale: PxScale, text: &str) -> f32 {}
+
 fn get_x_centered(w_master: f32, w_slave: f32, master_start_x: f32) -> f32 {
     (w_master - w_slave) / 2.0 + master_start_x
 }
+
+fn get_start_x_right(w_widget: f32, w_img: f32) {}
+
+fn get_start_y_bottom(h_widget: f32, h_img: f32) {}
+
+fn get_start_xy_center(w_widget: f32, h_widget: f32, w_img: f32, h_img: f32) {}
 
 #[cfg(test)]
 pub mod tests {
     use std::process::Command;
 
-    use crate::draw_callendar;
+    use crate::draw_calendar;
 
     #[test]
-    fn draw_callendar_test() {
+    fn draw_calendar_test() {
         let image_mock = "D:\\rustProjects\\smartwp\\test.png";
         let image_path = "D:\\rustProjects\\smartwp\\";
         let image_name = "test.png";
 
-        draw_callendar(image_mock, 50, 50, 32.0, "Nicer_test.png");
+        draw_calendar(
+            image_mock,
+            50.0,
+            50.0,
+            32.0,
+            false,
+            false,
+            false,
+            "gb-dark",
+            "Nicer_test.png",
+        );
         Command::new("cmd")
             .arg("/C")
             .arg(format!("start {}Nicer_{}", image_path, image_name))
