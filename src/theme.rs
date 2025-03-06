@@ -28,7 +28,7 @@ impl Theme {
             }
             "monochrome-light" => {
                 color_text = [89, 89, 89]; // #595959
-                color_highlighted = [52, 52, 52]; // #343434
+                color_highlighted = [25, 25, 25]; // #191919
                 color_headline = [77, 77, 77]; // #4d4d4d
             }
             _ => panic!("No such theme!"),
