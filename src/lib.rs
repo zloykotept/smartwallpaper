@@ -2,6 +2,7 @@ use std::path::Path;
 
 use ab_glyph::{Font, FontRef, PxScale, ScaleFont};
 use chrono::{Datelike, Local};
+use fs2::{available_space, total_space};
 use image::{open, Rgb};
 use imageproc::drawing::draw_text_mut;
 use network_interface::{NetworkInterface, NetworkInterfaceConfig};
@@ -273,6 +274,60 @@ pub fn draw_inet(mut conf: Config, iface_name: String) {
     }
 
     //save file
+    if conf.file_out.is_empty() {
+        img.save(conf.file_in).expect("Error while saving file");
+    } else {
+        let path = Path::new(conf.file_in).parent().unwrap().display();
+        img.save(format!("{}\\{}", path, conf.file_out))
+            .expect("Error while saving file");
+    }
+}
+
+pub fn draw_disk(mut conf: Config, partition: String) {
+    //open image and font
+    let mut img = open(conf.file_in).expect("Not an image").into_rgb8();
+    let font_regular = FontRef::try_from_slice(FONT_BYTES_REGULAR as &[u8]).expect("Invalid font");
+
+    //normalize font
+    let (img_width, img_height) = img.dimensions();
+    let scale_factor = (img_width * img_height) / (1920 * 1080);
+
+    conf.font_size *= (scale_factor as f32).sqrt();
+    let scale = PxScale::from(conf.font_size);
+
+    //info for widget
+    let total = total_space(&partition).expect("Failed to get metadata from partition") as f64
+        / 1_073_741_824.0;
+    let free = available_space(&partition).expect("Failed to get metadata from partition") as f64
+        / 1_073_741_824.0;
+    let widget_text = format!("In {} {:.1}Gb free from {:.1}Gb", partition, free, total);
+
+    // positioning
+    let widget_width = text_width(&font_regular, scale, &widget_text);
+    let widget_height = text_height(&font_regular, scale);
+
+    if conf.center {
+        conf.start_x = get_coord_centered(img_width as f32, widget_width, 0.0);
+        conf.start_y = get_coord_centered(img_height as f32, widget_height, 0.0);
+    }
+    if conf.bottom {
+        conf.start_y = img_height as f32 - widget_height - conf.start_y;
+    }
+    if conf.right {
+        conf.start_x = img_width as f32 - widget_width - conf.start_x;
+    }
+
+    //draw widget
+    draw_text_mut(
+        &mut img,
+        Rgb(conf.theme.color_text),
+        conf.start_x as i32,
+        conf.start_y as i32,
+        scale,
+        &font_regular,
+        &widget_text,
+    );
+
     if conf.file_out.is_empty() {
         img.save(conf.file_in).expect("Error while saving file");
     } else {

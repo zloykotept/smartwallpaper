@@ -3,7 +3,7 @@ extern crate clap;
 use std::{fs, path::Path};
 
 use clap::{App, Arg};
-use smartwp::{draw_calendar, draw_inet, theme::Theme, Config};
+use smartwp::{draw_calendar, draw_disk, draw_inet, theme::Theme, Config};
 
 fn main() {
     let matches = App::new("SmartWallpaper")
@@ -149,5 +149,7 @@ fn main() {
         draw_calendar(conf);
     } else if matches.is_present("net") {
         draw_inet(conf, matches.value_of("net").unwrap().to_string());
+    } else if matches.is_present("disk") {
+        draw_disk(conf, matches.value_of("disk").unwrap().to_string());
     }
 }
